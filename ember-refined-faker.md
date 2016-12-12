@@ -42,9 +42,7 @@ faker.fake('Hi, I\'m {{name.lastName}}, {{name.firstName}}.')
 
 ```javascript
 function fake([string]) {
-  string = string.replace(/\[/g, '{{')
-  string = string.replace(/\]/g, '}}')
-  return faker.fake(string)
+  return faker.fake(string.replace(/\[/g, '{{').replace(/\]/g, '}}'))
 }
 ```
 
