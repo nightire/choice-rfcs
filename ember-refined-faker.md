@@ -17,4 +17,35 @@ Ember 社区已经存在针对 faker.js 封装的 addon [ember-faker](github.com
 
 ## 细节
 
+### One ring rules them (almost) all
+
+尽管 faker.js 拥有[非常多的 API 方法](http://marak.github.io/faker.js/)，不过它也有一个非常实用的方法 [`faker.fake`](http://marak.github.io/faker.js/faker.html#-static-fake__anchor) 可以封装几乎所有的方法：
+
+```javascript
+faker.fake('Hi, I\'m {{name.lastName}}, {{name.firstName}}.')
+// "Hi, I'm John Doe."
+```
+
+用这种方式，除了不能满足需要附带参数的方法之外，其他的方法都可以通过解析 mustache 模版来进行输出。因此，可以设计一种 helper：
+
+```html
+{{fake "Hi, I'm {{name.lastName}}, {{name.firstName}}."}}
+```
+
+唯一的麻烦在于 mustache 的内插语法和 htmlbars 是冲突的，但可以通过替代语法来进行正则替换解决：
+
+```html
+{{fake "Hi, I'm [name.lastName], [name.firstName]."}}
+```
+
+具体实现类似于：
+
+```javascript
+function fake([string]) {
+  string = string.replace(/\[/g, '{{')
+  string = string.replace(/\]/g, '}}')
+  return faker.fake(string)
+}
+```
+
 ## 问题
