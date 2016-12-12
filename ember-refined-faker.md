@@ -5,7 +5,7 @@
 
 ## 概述
 
-[ember-refined-faker](https://github.com/very-geek/ember-refined-faker) 是一个 Ember Addon，封装了 [faker.js](https://github.com/Marak/faker.js)，并提供可在模版上直接使用的 htmlbars helper，其目的是为 UI 开发提供便利的随机伪数据生成功能。
+[ember-refined-faker](https://github.com/very-geek/ember-refined-faker) 是一个 Ember Addon，封装了 [faker.js](https://github.com/Marak/faker.js)，并提供可在模版上直接使用的 htmlbars helper，其目的是为了给 UI 开发提供便利的随机伪数据生成功能。
 
 ## 背景
 
@@ -19,7 +19,7 @@ Ember 社区已经存在针对 faker.js 封装的 addon [ember-faker](github.com
 
 ### 代理一切方法的 helper
 
-faker.js 的 API 规律性很强，在顶级命名空间 `faker` 之下用了十四个二级命名空间来分类，接着每一级之下有若干个方法来生成不同类型的随机伪数据。这些方法大多都是不带参数的，因此这样一个命名空间即可适应大多数应用场景：
+faker.js 的 API 规律性很强，在顶级命名空间 `faker` 之下用了十四个二级命名空间来分类，接着每一级之下有若干个方法来生成不同类型的随机伪数据。这些方法大多都是不带参数的，因此这样一个 helper 即可适应大多数应用场景：
 
 ```htmlbars
 {{fake "namespace.method"}}
@@ -57,7 +57,7 @@ function fake([signature, ...args]) {
 
 > 如果参数要求为对象，可以用内置的 `{{hash k=v}}` 来替代
 >
-> 如果参数要求为数组，可以考虑直接集成 [ember-composable-helpers](https://github.com/DockYard/ember-composable-helpers)，或者为避变依赖单独创建一个 `{{array}}` helper（但容易和 ember-composable-helpers 冲突，是否改名叫 `arr` 或 `list` ？或者叫 `fake-array`？@darkbaby123
+> 如果参数要求为数组，可以考虑直接集成 [ember-composable-helpers](https://github.com/DockYard/ember-composable-helpers)，或者为避变依赖单独创建一个 `{{array}}` helper（但容易和 ember-composable-helpers 冲突，是否改名叫 `arr` 或 `list` ？或者叫 `fake-array` ？
 
 另外，`faker.image` 默认使用 http://lorempixel.com/ 这个图片服务，根据实际观察该服务在中国境内访问非常慢。可以考虑在 **`/config/environment.js` 里增加一个配置选项**，通过重写 [`faker.image.imageUrl`](https://github.com/Marak/faker.js/blob/master/lib/image.js#L38) 方法替换成别的图片服务。
 
@@ -107,17 +107,21 @@ faker.locale = config.faker.defaultLocale
 let localeHasBeenChanged = false;
 
 function changeLocale(locale) {
-  if (locale && locale !== config.faker.defaultLocale) {
+  if (!localeHasBeenChanged) {
     faker.locale = locale
-    localeHasBeenChanged = true
-  } else if (localeHasBeenChanged) {
+    localeHasBeenChanged = true		// first change
+  } else if (locale && locale !== config.faker.defaultLocale) {
+    faker.locale = locale			// change again
+  } else {
     faker.locale = config.faker.defaultLocale
-    localeHasBeenChanged = false
+    localeHasBeenChanged = false  	// reset change
   }
 }
 
 function fake([signature, ...args], {parse = false, locale}) {
-  changeLocale(locale)
+  if (localeHasBeenChanged || locale) {
+    changeLocale(locale)
+  }
   
   if (parse) {
     return faker.fake(signature.replace(/\[/g, '{{').replace(/\]/g, '}}'))
