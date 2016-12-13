@@ -90,11 +90,14 @@ DELETE /v1/projects/:pid
 
 ## Entry
 
-### 获取所有 entry
+Entry 代表一个翻译词条。一个 entry 存放一个 key 和所有语言版本的翻译。支持的语言版本由系统决定。每个 entry 必须存放在某个 project 下，entry key 在该 project 下是唯一的。 project id + entry key 构成了 entry 的唯一标识符。
 
-只能获取某个 project 下面的 entry 。获取单个 entry 以 key 为标识符。换句话说，project id + entry key 构成了 entry 的唯一标识符。
+Entry key 可以用 `.` 来划分 namespace ，比如 `common.button.ok` 。namespace 可以任意指定，但 `global` 这个 namespace 只能由 global project 下的 entries 使用。
+
+### 获取 project 下面的所有 entries
 
 获取所有 entry ，包含所有语言版本。
+
 ```
 GET /v1/projects/:pid/entries
 ```
@@ -133,7 +136,7 @@ GET /v1/projects/:pid/entries/:entry_key?lang=zh_cn
 
 ### 创建或更新 entry
 
-根据 key 修改 entry，如果没有对应的 entry 就自动创建一个。客户端可选择上传对应语言版本的翻译，但不是必须的。如果不传任何数据，则值不作任何改变，如果触发自动创建，每项语言的值均为 `null` 。
+根据 key 修改 entry，如果没有对应的 entry 就自动创建一个。客户端可选择上传对应语言版本的翻译，但不是必须的。如果不传任何数据，则值不作任何改变，如果触发自动创建，每项语言的值均为 `null` 。可以用 `folder_id` 指定所属的 folder 。
 
 返回的 status code 方面，自动创建 entry 返回 201，否则返回 200 。
 
@@ -154,7 +157,7 @@ POST /v1/projects/:pid/entries/:entry_key
 POST /v1/projects/1/entries/common.button.ok
 ```
 
-返回：201
+返回 201
 
 ```json
 {
@@ -169,7 +172,7 @@ POST /v1/projects/1/entries/common.button.ok
 
 以下例子中为 `common.button.ok` 修改 en_us 和 zh_cn 的翻译文本。
 
-返回：200
+返回 200 ，response body 如下：
 
 ```
 POST /v1/projects/1/entries/common.button.ok
@@ -180,7 +183,7 @@ POST /v1/projects/1/entries/common.button.ok
 }
 ```
 
-返回：201
+返回 201 ，response body 如下：
 
 ```json
 {
@@ -195,7 +198,7 @@ POST /v1/projects/1/entries/common.button.ok
 
 以下例子中把 `common.button.ok` 的 zh_cn 翻译文本设置为 `null`。
 
-返回：200
+返回 200 ，response body 如下：
 
 ```
 POST /v1/projects/1/entries/common.button.ok
@@ -205,7 +208,7 @@ POST /v1/projects/1/entries/common.button.ok
 }
 ```
 
-返回：200
+返回 200 ，response body 如下：
 
 ```json
 {
@@ -217,6 +220,28 @@ POST /v1/projects/1/entries/common.button.ok
   }
 }
 ```
+
+以下例子中把 `common.button.ok` 放到 id 为 1 的 folder 下。
+
+```json
+POST /v1/projects/entries/common.button.ok
+
+{
+  "folder_id": 1
+}
+```
+
+返回 200 ，response body 为 entry 。
+
+### 删除 entry
+
+删除 entry ，folder 中包含该 entry 的信息也会被删掉。
+
+```
+DELETE /v1/projects/:pid/entries/:entry_key
+```
+
+返回 204 ，没有 response body 。
 
 
 ## Entry output
@@ -375,4 +400,3 @@ DELETE /v1/folders/:fid
 - API 规范方面，要不要考虑 JSON API ？这样前端也许可以直接用 Ember Data 。后端或许要调研一下合适的方案。
 - 当 response body 需要返回 folder 资源的情况下，folder 是否需要包含 entry_keys ？
 - 如何更新 folder 的指定 entries ？比如添加或者删除某几个 entries 。是否需要这些功能？
-- 考虑到 i18n 管理界面可能会有 "在某个 folder 下创建 entry" 的情况，是否需要让创建 entry 的 API 可以传 `folder_id` ？
