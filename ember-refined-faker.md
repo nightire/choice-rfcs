@@ -61,6 +61,20 @@ function fake([signature, ...args]) {
 
 另外，`faker.image` 默认使用 http://lorempixel.com/ 这个图片服务，根据实际观察该服务在中国境内访问非常慢。可以考虑在 **`/config/environment.js` 里增加一个配置选项**，通过重写 [`faker.image.imageUrl`](https://github.com/Marak/faker.js/blob/master/lib/image.js#L38) 方法替换成别的图片服务。
 
+**更新：**
+
+替换的图片服务将从以下候选项中选取：
+
+- https://unsplash.it/
+- https://dummyimage.com/
+- https://placehold.it/
+- https://placeimg.com/
+- http://loremflickr.com/
+- https://placekitten.com/
+- http://fakeimg.pl/
+
+让多个服务并存也可以考虑，不过不是初期的首要目标。
+
 ### 支持复合表达式的 helper
 
 尽管 faker.js 拥有[非常多的 API 方法](http://marak.github.io/faker.js/)，不过它也有一个非常实用的方法 [`faker.fake`](http://marak.github.io/faker.js/faker.html#-static-fake__anchor) 可以封装所有不需要入参的方法，通过字符串内插的方式进行组合调用：
