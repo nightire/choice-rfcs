@@ -55,7 +55,7 @@ GET /v1/projects/:pid/entries/:entry_key
 GET /v1/projects/:pid/entries/:entry_key?lang=zh_cn
 ```
 
-### 创建或修改 entry
+### 创建或更新 entry
 
 根据 key 修改 entry，如果没有对应的 entry 就自动创建一个。客户端可选择上传对应语言版本的翻译，但不是必须的。如果不传任何数据，则值不作任何改变，如果触发自动创建，每项语言的值均为 `null` 。
 
@@ -162,3 +162,139 @@ GET /v1/projects/:pid/entry_output/en_us
   }
 }
 ```
+
+## Folder
+
+Folder 从属于一个 project ，用于为 entries 分组，每个 folder 用 `filter` 属性指定一种 entries 的筛选规则。目前有三种：
+
+1. `global` ，筛选 global entries 。
+1. `all` ，筛选 project 下面的所有 entries ，不包括 global entries 。
+1. `selection` ，根据 folder 存储的 entry keys 筛选指定的 entries 。
+
+global 和 all 两个 folders 均为自动创建，无法修改和删除。global project 包含一个 global folder ，且不能创建任何其他 folders 。其他 project 创建时会自动生成 global 和 all 两个 folders ，用户可以创建 selection folders 。
+
+### 获取一个 project 下面的 folders
+
+```
+GET /v1/projects/:pid/folders
+```
+
+返回 200
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Global",
+      "filter": "global"
+    },
+    {
+      "id": 2,
+      "name": "All",
+      "filter": "all"
+    },
+    {
+      "id": 3,
+      "name": "Dashboard",
+      "filter": "selection"
+    },
+  ]
+}
+```
+
+### 获取 folder 下面的 entries
+
+```
+GET /v1/folders/:fid/entries
+```
+
+返回 200 ，response body 为 entry 列表。
+
+### 创建 folder
+
+创建的 folder 的 filter 均为 `selection` ，并且 `name` 不能跟同一 project 下的其他 folder 重名。
+
+```
+POST /v1/folders
+
+{
+  "project_id": 1,
+  "name": "Common",
+  "entry_keys": [
+    "common.button.ok",
+    "common.button.cancel"
+  ]
+}
+```
+
+返回 201 ，response body 为 folder 。
+
+### 更新 folder
+
+可以更新 folder 的 `name` 和 `entry_keys` ，所有指定的属性均为替换而不是增量累加，没有指定的属性保持不变。
+
+```
+PUT /v1/folders/:fid
+
+{
+  "name": "Common",
+  "entry_keys": [
+    "common.button.ok"
+  ]
+}
+```
+
+返回 200 ，response body 为 folder 。
+
+### 删除 folder
+
+删除 folder 。只能删除 selection folder 。
+
+```
+DELETE /v1/folders/:fid
+```
+
+返回 204 ，没有 response body 。
+
+
+## 错误的返回值
+
+所有 API 发生错误时都遵循一下规范。
+
+错误的状态码有以下几种：
+
+- 当授权信息不正确时（比如 token 不正确，过期），返回 401 。
+- 当授权正确但没有权限访问某资源时（比如访问其他组织的 project），返回 403 。
+- 当指定的资源不存在时，返回 404 。
+- 当 API 请求遇到错误时（比如参数不合法，校验错误），返回 422 。
+
+错误的 response body 有两种。
+
+当需要返回单条错误信息时，用以下格式。大多数情况都是这种格式。
+
+```json
+{
+  "error": {
+    "message": "Some error messages"
+  }
+}
+```
+
+当需要返回多条错误信息时，用以下格式。这种情况多发生在 422 校验错误。下面是创建 folder API 校验错误的情况。
+
+```json
+{
+  "errors": {
+    "name": "Name has already been taken",
+    "entry_keys": "entries can't be blank"
+  }
+}
+```
+
+
+## 问题
+
+- 当 response body 需要返回 folder 资源的情况下，folder 是否需要包含 entry_keys ？
+- 如何更新 folder 的指定 entries ？比如添加或者删除某几个 entries 。是否需要这些功能？
+- API 规范方面，要不要考虑 JSON API ？这样前端也许可以直接用 Ember Data 。后端或许要调研一下合适的方案。
