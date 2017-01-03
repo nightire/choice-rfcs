@@ -22,18 +22,17 @@
 
 ### 高可靠性、一致性并且允许灵活配置的 SDK 加载机制
 
-- [ ] 百度地图 JavaScript API 已经全部支持 *https*，因此加载将使用 *https* 并且不提供回退至 *http* 的配置选项（除非遇到确实需要的场景）
-- [ ] 百度地图 JavaScript API 自 *v1.5* 起加载需要提供 **secret key**，因此提供配置选项填写 **secret key**，如果没有则加载 *v1.4* 版本，反之则加载最新版本（当前是 *v2.0*）；另外在 development 环境下通过控制台提醒开发者加载的具体版本
-- [ ] 百度地图 JavaScript API 应允许使用 *async* 模式加载（直接写入 `<head></head>` 里），否则应尝试使用 *instance initializer* 来加载（监听 `DOMContentLoaded` 事件）
-- [ ] 根据[文档描述](http://lbsyun.baidu.com/index.php?title=jspopular/guide/introduction#.E5.BC.82.E6.AD.A5.E5.8A.A0.E8.BD.BD)，百度地图 JavaScript API 支持加载时的异步回调，问题是范例代码使用的是全局函数，不过这个应该不难变成模块形式让开发者来定义回调函数
-
-### 将百度地图 JavaScript API 封装为 ES2015 Modules 格式
-
-***TODO***
+- [x] 百度地图 JavaScript API 已经全部支持 *https*，因此加载将使用 *https* 并且不提供回退至 *http* 的配置选项（除非遇到确实需要的场景）
+- [x] 百度地图 JavaScript API 自 *v1.5* 起加载需要提供 **secret key**，因此提供配置选项填写 **secret key**，如果没有则加载 *v1.4* 版本，反之则加载最新版本（当前是 *v2.0*）
+      - [ ] 另外在 development 环境下通过控制台提醒开发者加载的具体版本
+- [x] 百度地图 JavaScript API 应允许使用 *async* 模式加载（直接写入 `<head></head>` 底部）
+- [x] ~~根据[文档描述](http://lbsyun.baidu.com/index.php?title=jspopular/guide/introduction#.E5.BC.82.E6.AD.A5.E5.8A.A0.E8.BD.BD)，百度地图 JavaScript API 支持加载时的异步回调，问题是范例代码使用的是全局函数，不过这个应该不难变成模块形式让开发者来定义回调函数~~（无意义）
 
 ## 问题
 
-- 尝试解决一下关于 `document.write()` 引起的 deprecations，这可能是百度地图 SDK 自身引起的
+- [x] 尝试解决一下关于 `document.write()` 引起的 deprecations，这可能是百度地图 SDK 自身引起的
+      **解决：**原因是官方提供的脚本其实还会执行另外一次加载（通过 `document.write` 写入），但是 Chrome 会提示这种写法有加载阻塞问题。所以使用人工的方式避免二次加载，完美解决
+- [x] ES2015 Module Shim？~~目前看起来貌似不可能~~ 当然支持！
 
 ## 其他
 
